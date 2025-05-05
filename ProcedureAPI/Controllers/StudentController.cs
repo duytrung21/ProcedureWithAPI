@@ -44,5 +44,46 @@ namespace ProcedureAPI.Controllers
             }
             return Ok(std);
         }
+        [HttpGet("{id}")]
+        public IActionResult GetStudentById(int id)
+        {           
+            try
+            {
+                Student student = null;
+                using (SqlConnection connect = new SqlConnection(_connectionString))
+                {
+                    SqlCommand cmd = new SqlCommand("GetStudentById", connect);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    connect.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        student = new Student
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            StudentName = reader["StudentName"].ToString(),
+                            Age = Convert.ToInt32(reader["Age"]),
+                            Address = reader["Address"].ToString(),
+                            PhoneNumber = reader["PhoneNumber"].ToString()
+                        };
+                    }
+                }
+                if(student == null)
+                {
+                    return NotFound(new { Message = "Khong tim thay sinh vien!" });
+                }
+                return Ok(student);
+            }
+            catch(Exception e)
+            {
+                return BadRequest(new { Message = "Loi " + e.Message });
+            }
+        }
+        [HttpPost]
+        public IActionResult AddStudent(int Id, string StudentName, int Age, string Address, string PhoneNumber)
+        {
+
+        }
     }
 }
