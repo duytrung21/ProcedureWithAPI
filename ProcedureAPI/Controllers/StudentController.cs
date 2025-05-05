@@ -83,7 +83,46 @@ namespace ProcedureAPI.Controllers
         [HttpPost]
         public IActionResult AddStudent(int Id, string StudentName, int Age, string Address, string PhoneNumber)
         {
+            try
+            {
+                using (SqlConnection connect = new SqlConnection(_connectionString))
+                {
+                    SqlCommand cmd = new SqlCommand("AddStudent", connect);
+                    cmd.CommandType = CommandType.StoredProcedure;
 
+                    cmd.Parameters.AddWithValue("@Id", Id);
+                    cmd.Parameters.AddWithValue("@StudentName", StudentName);
+                    cmd.Parameters.AddWithValue("@Age", Age);
+                    cmd.Parameters.AddWithValue("@Address", Address);
+                    cmd.Parameters.AddWithValue("@PhoneNumber", PhoneNumber);
+                    connect.Open();
+
+                    Student newStudent = null;
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            newStudent = new Student
+                            {
+                                Id = Convert.ToInt32(reader["Id"]),
+                                StudentName = reader["StudentName"].ToString(),
+                                Age = Convert.ToInt32(reader["Age"]),
+                                Address = reader["Address"].ToString(),
+                                PhoneNumber = reader["PhoneNumber"].ToString()
+                            };
+                        }
+                    }
+                    return Ok(new
+                    {
+                        message = "Them sinh vien thanh cong!",
+                        student = newStudent
+                    });
+                }
+            }
+            catch(Exception e)
+            {
+                return BadRequest(new { message = "Error: " + e.Message });
+            }
         }
     }
 }
